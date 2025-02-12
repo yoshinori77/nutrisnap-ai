@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createRouteHandlerClient } from '@supabase/auth-helpers-nextjs';
+import { cookies } from 'next/headers';
 import { ChatOpenAI } from "@langchain/openai";
 import { ChatPromptTemplate, HumanMessagePromptTemplate } from "@langchain/core/prompts";
 
@@ -11,7 +12,7 @@ export const config = {
 
 export async function POST(request: Request) {
   try {
-    const { message, userId } = await request.json();
+    const { message } = await request.json();
 
     // AI チャット設定
     const chat = new ChatOpenAI({ temperature: 0, modelName: "gpt-4o-2024-05-13" });
@@ -23,24 +24,26 @@ export async function POST(request: Request) {
       humanMessageTemplate,
     ]);
     const chain = prompt.pipe(chat);
-
     const result = await chain.invoke({ question: message });
     const output =
       result && typeof result === "object" && "text" in result
         ? result.text
         : JSON.stringify(result);
 
-    // Supabase Admin Client を利用してチャット履歴を保存
-    const supabaseAdmin = createClient(
-      process.env.NEXT_PUBLIC_SUPABASE_URL!,
-      process.env.SUPABASE_SERVICE_ROLE_KEY!
-    );
+    // Supabase のユーザー認証情報（JWT）を利用してクライアントを作成し、セッションを取得
+    const supabase = createRouteHandlerClient({ cookies });
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session || !session.user) {
+      return NextResponse.json({ error: "認証されていません" }, { status: 401 });
+    }
+    const userId = session.user.id;
 
-    const { error: dbError } = await supabaseAdmin
+    // chat_history テーブルにレコードを挿入
+    const { error: dbError } = await supabase
       .from("chat_history")
       .insert([
-        { user_id: userId || null, message: message, role: "user" },
-        { user_id: userId || null, message: output, role: "bot" }
+        { user_id: userId, message: message, role: "user" },
+        { user_id: userId, message: output, role: "bot" }
       ]);
     if (dbError) {
       console.error("Chat history DB insert error:", dbError);
