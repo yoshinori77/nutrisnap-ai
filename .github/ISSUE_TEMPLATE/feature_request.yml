@@ -42,11 +42,11 @@ body:
       label: 影響範囲
       description: この変更が影響を与える可能性のあるシステムコンポーネントを選択してください（複数選択可）
       options:
-        - UI/UX
-        - API
-        - データベース
-        - インフラ/CI/CD
-        - その他
+        - label: "UI/UX"
+        - label: "API"
+        - label: "データベース"
+        - label: "インフラ/CI/CD"
+        - label: "その他"
   - type: textarea
     id: additional-info
     attributes:
