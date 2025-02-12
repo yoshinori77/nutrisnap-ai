@@ -21,7 +21,7 @@ body:
     attributes:
       label: 機能の説明
       description: 追加してほしい機能の目的、背景、動作イメージなど、具体的な内容を記述してください
-      placeholder: 例: ユーザーがタスクの追加、編集、削除ができ、期限を設定できる機能。これによりタスク管理がより効率的になります。
+      placeholder: "例: ユーザーがタスクの追加、編集、削除ができ、期限を設定できる機能。これによりタスク管理がより効率的になります。"
       required: true
   - type: dropdown
     id: priority
@@ -56,4 +56,4 @@ body:
     attributes:
       label: その他の情報 / コメント
       description: この機能に関連する背景や参考情報、追加のコメントなどがあればご記入ください
-      placeholder: 例: 他プロジェクトでの事例や参考URLなど
+      placeholder: "例: 他プロジェクトでの事例や参考URLなど"
