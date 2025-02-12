@@ -14,7 +14,7 @@ body:
     attributes:
       label: 追加してほしい機能の名前
       description: 機能の簡潔な名称を入力してください
-      placeholder: 例: タスク管理機能
+      placeholder: "例: タスク管理機能"
       required: true
   - type: textarea
     id: feature-description
