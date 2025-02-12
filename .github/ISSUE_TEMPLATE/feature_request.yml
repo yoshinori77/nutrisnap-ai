@@ -15,6 +15,7 @@ body:
       label: 追加してほしい機能の名前
       description: 機能の簡潔な名称を入力してください
       placeholder: "例: タスク管理機能"
+    validations:
       required: true
   - type: textarea
     id: feature-description
@@ -22,6 +23,7 @@ body:
       label: 機能の説明
       description: 追加してほしい機能の目的、背景、動作イメージなど、具体的な内容を記述してください
       placeholder: "例: ユーザーがタスクの追加、編集、削除ができ、期限を設定できる機能。これによりタスク管理がより効率的になります。"
+    validations:
       required: true
   - type: dropdown
     id: priority
@@ -29,28 +31,22 @@ body:
       label: 優先度
       description: この機能の実装優先度を選択してください
       options:
-        - label: 高
-          value: high
-        - label: 中
-          value: medium
-        - label: 低
-          value: low
+        - 高
+        - 中
+        - 低
+    validations:
+      required: true
   - type: checkboxes
     id: impacted-areas
     attributes:
       label: 影響範囲
       description: この変更が影響を与える可能性のあるシステムコンポーネントを選択してください（複数選択可）
       options:
-        - label: UI/UX
-          value: ui_ux
-        - label: API
-          value: api
-        - label: データベース
-          value: database
-        - label: インフラ/CI/CD
-          value: infrastructure
-        - label: その他
-          value: others
+        - UI/UX
+        - API
+        - データベース
+        - インフラ/CI/CD
+        - その他
   - type: textarea
     id: additional-info
     attributes:
