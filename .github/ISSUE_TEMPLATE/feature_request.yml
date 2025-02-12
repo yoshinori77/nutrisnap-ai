@@ -1,4 +1,5 @@
 name: "機能追加の要望"
+description: "このテンプレートは、機能追加の要望を詳細に記述するためのフォームです。"
 title: "[機能追加] タイトルを記入"
 labels:
   - enhancement
