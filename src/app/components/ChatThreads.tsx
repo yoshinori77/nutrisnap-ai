@@ -38,14 +38,14 @@ export default function ChatThreads() {
     fetchThreads();
   }, []);
 
-  if (loading) return <div>読み込み中...</div>;
-  if (error) return <div>エラー: {error}</div>;
+  if (loading) return <div className="p-4">読み込み中...</div>;
+  if (error) return <div className="p-4 text-red-500">エラー: {error}</div>;
 
   return (
-    <div style={{ padding: "1rem" }}>
-      <h1>チャットスレッド</h1>
+    <div className="p-4">
+      <h1 className="text-2xl font-bold mb-4">チャットスレッド</h1>
       <Link href="/chat/new">
-        <button style={{ marginBottom: "1rem", padding:"0.5rem 1rem", cursor:"pointer" }}>
+        <button className="mb-4 py-2 px-4 bg-blue-500 text-white rounded hover:bg-blue-600">
           スレッドの新規作成
         </button>
       </Link>
@@ -54,12 +54,19 @@ export default function ChatThreads() {
           const messages = threads[threadId];
           const firstMessage = messages[0];
           return (
-            <li key={threadId} style={{ marginBottom: "1rem", border: "1px solid #ccc", padding: "0.5rem" }}>
+            <li key={threadId} className="mb-4 border border-gray-300 p-2 rounded">
               <Link href={`/chat/${threadId}`}>
                 <div>
-                  <p><strong>スレッドID:</strong> {threadId}</p>
-                  <p><strong>最初のメッセージ:</strong> {firstMessage.message}</p>
-                  <p><strong>作成日時:</strong> {new Date(firstMessage.created_at).toLocaleString()}</p>
+                  <p>
+                    <strong>スレッドID:</strong> {threadId}
+                  </p>
+                  <p>
+                    <strong>最初のメッセージ:</strong> {firstMessage.message}
+                  </p>
+                  <p>
+                    <strong>作成日時:</strong>{" "}
+                    {new Date(firstMessage.created_at).toLocaleString()}
+                  </p>
                 </div>
               </Link>
             </li>
