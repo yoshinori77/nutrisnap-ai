@@ -45,14 +45,18 @@ export async function POST(request: Request) {
       throw storageError;
     }
 
-    // 5. ストレージからパブリックURLを取得（認証済みユーザーのクライアントを使用）
+    // 5. 署名付きURLを取得（認証済みユーザーのクライアントを使用）
+    const { data: signedUrlData, error: signedUrlError } = await supabase.storage
+      .from("upload_images")
+      .createSignedUrl(fileName, 300);  // 有効期限300秒（必要に応じて調整）
+    if (signedUrlError || !signedUrlData?.signedUrl) {
+      throw new Error("Failed to retrieve signed URL");
+    }
+
+    // (オプション) 長期利用用にパブリックURLも取得（利用可能なら）
     const { data: publicUrlData } = supabase.storage
       .from("upload_images")
       .getPublicUrl(fileName);
-    // 取得結果が null または publicUrl がない場合はエラーとする
-    if (!publicUrlData || !publicUrlData.publicUrl) {
-      throw new Error("Failed to retrieve public URL");
-    }
 
     // 6. AI解析のため、画像ファイルをBase64に変換
     // const arrayBuffer = await originalFile.arrayBuffer();
@@ -64,7 +68,7 @@ export async function POST(request: Request) {
       "あなたは有能なパーソナルトレーナーです。ユーザーから送られる画像の解析結果を元に、食事に含まれるカロリーと栄養素を回答してください。";
     const humanPrompt = "{question}";
     // const imageTemplate = { image_url: { url: `data:image/png;base64,${base64Image}` } };
-    const imageTemplate = { image_url: { url: publicUrlData.publicUrl } };
+    const imageTemplate = { image_url: { url: signedUrlData.signedUrl } };
     const humanMessageTemplate = HumanMessagePromptTemplate.fromTemplate([humanPrompt, imageTemplate]);
     const prompt = ChatPromptTemplate.fromMessages([
       { role: "system", content: systemPrompt },
@@ -72,8 +76,18 @@ export async function POST(request: Request) {
     ]);
     const chain = prompt.pipe(chat);
     const result = await chain.invoke({
-      question:
-        "この画像内に食事がある場合は、カロリー、タンパク質、脂質、炭水化物を表示してください。",
+      question: `
+        画像から料理の栄養素情報を抽出してください。
+        以下のフォーマットで出力してください:
+        カロリー: [数字]
+        タンパク質: [数字]
+        脂質: [数字]
+        炭水化物: [数字]
+        ビタミン: [数字]
+        ミネラル: [数字]
+        食物繊維: [数字]
+        画像に写っている情報のみを基に、可能な範囲で数値を推定してください。
+      `,
     });
     const aiResult =
       result && typeof result === "object" && "text" in result ? result.text : JSON.stringify(result);
@@ -81,7 +95,8 @@ export async function POST(request: Request) {
     // 8. Prisma ORM を使用してアップロード情報をデータベースに保存 (uploadテーブル)
     await prisma.upload.create({
       data: {
-        image_data: publicUrlData.publicUrl,
+        // 保存時は、利用可能ならパブリックURL、なければ署名付きURLを保存
+        image_data: publicUrlData?.publicUrl || signedUrlData.signedUrl,
         ai_response: aiResult,
         user_id: userId,
       },
@@ -93,7 +108,7 @@ export async function POST(request: Request) {
         {
           user_id: userId,
           thread_id: threadId,
-          message: publicUrlData.publicUrl,
+          message: publicUrlData?.publicUrl || signedUrlData.signedUrl,
           role: "user",
           created_at: new Date(),
         },
@@ -107,7 +122,7 @@ export async function POST(request: Request) {
       ],
     });
 
-    return NextResponse.json({ result: aiResult, url: publicUrlData.publicUrl });
+    return NextResponse.json({ result: aiResult, url: publicUrlData?.publicUrl || signedUrlData.signedUrl });
   } catch (error) {
     console.error("Upload API Error:", error);
     return NextResponse.json({ error: "画像解析およびアップロードでエラーが発生しました" }, { status: 500 });

@@ -1,29 +1,58 @@
 generator client {
-  provider = "prisma-client-js"
+    provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
 }
 
 model ChatHistory {
-  id         String   @id @default(uuid()) @db.Uuid
-  user_id    String   @default(uuid()) @db.Uuid
-  message    String
-  role       String
-  created_at DateTime @default(now())
-  thread_id  String   @default(uuid())
+    id         String   @id @default(uuid()) @db.Uuid
+    user_id    String   @default(uuid()) @db.Uuid
+    message    String
+    role       String
+    created_at DateTime @default(now())
+    thread_id  String   @default(uuid())
 
-  @@map("chat_history")
+    @@map("chat_history")
 }
 
 model Upload {
-  id          String   @id @default(uuid()) @db.Uuid
-  user_id     String   @default(uuid()) @db.Uuid
-  image_data  String
-  ai_response String
-  created_at  DateTime @default(now())
+    id          String   @id @default(uuid()) @db.Uuid
+    user_id     String   @default(uuid()) @db.Uuid
+    image_data  String
+    ai_response String
+    created_at  DateTime @default(now())
 
-  @@map("upload")
+    @@map("upload")
+}
+
+model NutritionAdjustment {
+    id         String   @id @default(uuid()) @db.Uuid
+    user_id    String   @db.Uuid
+    date       String
+    calories   Int
+    protein    Int
+    fat        Int
+    carbs      Int
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    @@unique([user_id, date], name: "user_id_date")
+    @@map("nutrition_adjustment")
+}
+
+model UserProfile {
+    id         String   @id @default(uuid()) @db.Uuid
+    user_id    String   @unique @db.Uuid
+    gender     String
+    age        Int
+    height     Int
+    weight     Int
+    activity_factor Float
+    created_at DateTime @default(now())
+    updated_at DateTime @updatedAt
+
+    @@map("user_profile")
 }
